@@ -31,3 +31,12 @@ def get_available_subjects():
     # Convert collection names back to subject names (replace underscores with spaces and capitalize)
     subjects = [coll.replace('_', ' ').title() for coll in subject_collections]
     return sorted(subjects)
+
+def get_all_sets(subject_name):
+    collection = get_subject_collection(subject_name)
+    return list(collection.find({}, {
+        "_id": 0,
+        "set_code": 1,
+        "subject_code": 1,
+        "total_questions": {"$size": "$questions"}
+    }))

@@ -1,6 +1,6 @@
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler
 from handlers.start import start, mock_test
-from handlers.subject import subject_callback
+from handlers.subject import subject_callback, set_callback
 from handlers.answer import answer_callback, explain_command, end_test_command
 from handlers.admin import handle_json_file
 from telegram.ext import MessageHandler, filters
@@ -15,6 +15,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("explain", explain_command))
     app.add_handler(CommandHandler("end_test", end_test_command))
     app.add_handler(CallbackQueryHandler(subject_callback, pattern="^start_"))
+    app.add_handler(CallbackQueryHandler(set_callback, pattern="^set_"))
     app.add_handler(CallbackQueryHandler(answer_callback, pattern="^answer_"))
     app.add_handler(MessageHandler(filters.Document.FileExtension("json"), handle_json_file))
 

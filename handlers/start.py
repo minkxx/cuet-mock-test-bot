@@ -10,7 +10,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     welcome_message = (
         f"👋 Hello {user.first_name}!\n\n"
-        "Welcome to CUET Test Bot! 📚\n\n"
+        "Welcome to CUET Mock Test Bot! 📚\n\n"
         "Here's what you can do:\n"
         "• /mock_test - Start a mock test\n"
         "• /explain - View explanations during a test\n"
