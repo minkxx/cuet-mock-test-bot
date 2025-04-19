@@ -13,7 +13,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Welcome to CUET Mock Test Bot! 📚\n\n"
         "Here's what you can do:\n"
         "• /mock_test - Start a mock test\n"
-        "• /explain - View explanations during a test\n"
         "• /end_test - End current test and see results\n\n"
         "Ready to test your knowledge? Use /mock_test to begin!"
     )

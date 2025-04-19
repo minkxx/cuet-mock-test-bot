@@ -34,11 +34,12 @@ async def subject_callback(update, context: ContextTypes.DEFAULT_TYPE):
     for set_info in sets:
         set_code = set_info["set_code"]
         total_questions = set_info["total_questions"]
+        max_score = total_questions * 5
         
         if set_code in attempts_by_set:
             # Show best score if attempted
             best_attempt = attempts_by_set[set_code]
-            button_text = f"Set {set_code} - Best: {best_attempt['score']}/{best_attempt['total']}"
+            button_text = f"Set {set_code} - Best: {best_attempt['score']}/{max_score}"
         else:
             # Show as unattempted
             button_text = f"Set {set_code} - Unattempted"
@@ -72,7 +73,8 @@ async def set_callback(update, context: ContextTypes.DEFAULT_TYPE):
         "set_code": set_code,
         "questions": test_set["questions"],
         "current_index": 0,
-        "score": 0
+        "score": 0,
+        "user_id": query.from_user.id
     }
 
     await send_next_question(query, context)
@@ -83,7 +85,7 @@ async def send_next_question(query, context):
 
     if index >= len(test["questions"]):
         from handlers.answer import finish_test
-        await finish_test(query, context)
+        await finish_test(query.message, context)
         return
 
     q = test["questions"][index]
@@ -94,6 +96,11 @@ async def send_next_question(query, context):
         [InlineKeyboardButton(opt, callback_data=f"answer_{i}")]
         for i, opt in enumerate(q["options"])
     ]
+    # Add skip button, or end test button if it's the last question
+    if index == len(test["questions"]) - 1:
+        buttons.append([InlineKeyboardButton("🏁 End Test", callback_data="end_test")])
+    else:
+        buttons.append([InlineKeyboardButton("⏭️ Skip", callback_data="skip")])
     reply_markup = InlineKeyboardMarkup(buttons)
 
     # Use question_no if available, fallback to index + 1 if not
