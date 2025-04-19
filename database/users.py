@@ -62,3 +62,46 @@ def get_user_info(user_id):
         }
     )
     return user
+
+def get_subject_leaderboard(subject_code):
+    """
+    Get top 10 users for a specific subject based on their highest score.
+    Returns a list of users with their best scores for the subject.
+    """
+    pipeline = [
+        # Unwind the tests_attempted array to work with individual test attempts
+        {"$unwind": "$tests_attempted"},
+        # Match documents for the specific subject
+        {"$match": {"tests_attempted.subject_code": subject_code}},
+        # Group by user to get their highest score
+        {
+            "$group": {
+                "_id": {
+                    "user_id": "$user_id",
+                    "username": "$username",
+                    "name": "$name"
+                },
+                "highest_score": {"$max": "$tests_attempted.score"},
+                "total_questions": {"$first": "$tests_attempted.total"},
+                "subject_name": {"$first": "$tests_attempted.subject_name"}
+            }
+        },
+        # Sort by highest score in descending order
+        {"$sort": {"highest_score": -1}},
+        # Limit to top 10 users
+        {"$limit": 10},
+        # Project the final format
+        {
+            "$project": {
+                "_id": 0,
+                "user_id": "$_id.user_id",
+                "username": "$_id.username",
+                "name": "$_id.name",
+                "score": "$highest_score",
+                "total": "$total_questions",
+                "subject_name": "$subject_name"
+            }
+        }
+    ]
+    
+    return list(users_collection.aggregate(pipeline))

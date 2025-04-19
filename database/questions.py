@@ -40,3 +40,26 @@ def get_all_sets(subject_name):
         "subject_code": 1,
         "total_questions": {"$size": "$questions"}
     }))
+
+def get_all_subjects():
+    """
+    Get all available subjects with their codes and names.
+    Returns a list of dictionaries with 'code' and 'name' keys.
+    """
+    # Get all collection names and filter out system collections
+    all_collections = db.list_collection_names()
+    system_collections = {'users', 'system.indexes'}  # Add other system collections if needed
+    subject_collections = [coll for coll in all_collections if coll not in system_collections]
+    
+    subjects = []
+    for collection_name in subject_collections:
+        # Get a sample document to extract subject code and name
+        collection = db[collection_name]
+        sample_doc = collection.find_one({}, {"subject_code": 1, "subject_name": 1})
+        if sample_doc and "subject_code" in sample_doc:
+            subjects.append({
+                "code": sample_doc["subject_code"],
+                "name": sample_doc.get("subject_name", collection_name.replace('_', ' ').title())
+            })
+    
+    return sorted(subjects, key=lambda x: x["code"])
