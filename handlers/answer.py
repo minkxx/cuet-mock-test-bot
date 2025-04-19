@@ -79,13 +79,13 @@ async def finish_test(update, context):
     test = context.user_data["current_test"]
     
     # Handle different types of update objects
-    if hasattr(update, 'callback_query'):  # Full Update object with callback_query
+    if hasattr(update, 'callback_query') and update.callback_query:  # Callback query case
         user_id = update.callback_query.from_user.id
         message = update.callback_query.message
-    elif hasattr(update, 'message'):  # Full Update object from command
+    elif hasattr(update, 'effective_user'):  # Command case (/end_test)
         user_id = update.effective_user.id
         message = update.message
-    else:  # Direct Message object
+    else:  # Direct Message object case
         message = update
         user_id = context.user_data.get("current_test", {}).get("user_id")
 
@@ -95,7 +95,7 @@ async def finish_test(update, context):
         test["subject_name"],
         test["set_code"],
         test["score"],
-        len(test["questions"])
+        len(test["questions"]) * 5
     )
 
     # Show final score
