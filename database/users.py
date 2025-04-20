@@ -105,3 +105,69 @@ def get_subject_leaderboard(subject_code):
     ]
     
     return list(users_collection.aggregate(pipeline))
+
+def get_overall_leaderboard():
+    """
+    Get top 10 users across all subjects based on their total score percentage.
+    Returns a list of users with their overall performance.
+    """
+    pipeline = [
+        # Unwind the tests_attempted array to work with individual test attempts
+        {"$unwind": "$tests_attempted"},
+        # Group by user and subject to get highest score per subject
+        {
+            "$group": {
+                "_id": {
+                    "user_id": "$user_id",
+                    "username": "$username",
+                    "name": "$name",
+                    "subject_code": "$tests_attempted.subject_code"
+                },
+                "highest_score": {"$max": "$tests_attempted.score"},
+                "total_questions": {"$first": "$tests_attempted.total"}
+            }
+        },
+        # Group by user to calculate overall performance
+        {
+            "$group": {
+                "_id": {
+                    "user_id": "$_id.user_id",
+                    "username": "$_id.username",
+                    "name": "$_id.name"
+                },
+                "total_score": {"$sum": "$highest_score"},
+                "total_questions": {"$sum": "$total_questions"},
+                "subjects_attempted": {"$sum": 1}
+            }
+        },
+        # Add percentage field
+        {
+            "$addFields": {
+                "percentage": {
+                    "$multiply": [
+                        {"$divide": ["$total_score", "$total_questions"]},
+                        100
+                    ]
+                }
+            }
+        },
+        # Sort by percentage in descending order
+        {"$sort": {"percentage": -1}},
+        # Limit to top 10 users
+        {"$limit": 10},
+        # Project the final format
+        {
+            "$project": {
+                "_id": 0,
+                "user_id": "$_id.user_id",
+                "username": "$_id.username",
+                "name": "$_id.name",
+                "score": "$total_score",
+                "total": "$total_questions",
+                "percentage": 1,
+                "subjects_attempted": 1
+            }
+        }
+    ]
+    
+    return list(users_collection.aggregate(pipeline))
